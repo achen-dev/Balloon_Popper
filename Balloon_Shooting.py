@@ -74,8 +74,10 @@ class Bullet (pygame.sprite.Sprite):
         self.surf = pygame.Surface((50, 50))
         self.rect = self.surf.get_rect(center=(SCREEN_WIDTH - 50, 25))
 
-    def move(self):
-        if self.rect.x < 0:
+    def move(self, barrel):
+        keypress = pygame.key.get_pressed()
+        if keypress[K_SPACE] and self.rect.x < 0:
+            self.rect.y = barrel.rect.y + 15
             self.rect.x = SCREEN_WIDTH - 50
         self.rect.move_ip(-10, 0)
 
@@ -97,9 +99,7 @@ while True:
     CANNON.draw(game_window)
     BALLOON.draw(game_window)
     BULLET.draw(game_window)
-    keypress = pygame.key.get_pressed()
-    if keypress[K_SPACE]:
-        BULLET.move()
+    BULLET.move(CANNON)
     BALLOON.update()
     CANNON.update()
     pygame.display.update()
