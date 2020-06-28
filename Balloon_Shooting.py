@@ -3,6 +3,7 @@
 import pygame
 import random
 import sys
+import time
 from pygame.locals import *
 
 pygame.init()
@@ -17,6 +18,10 @@ WHITE = (255, 255, 255)
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+
+font_small = pygame.font.SysFont("Verdana", 20)
+
+SCORE = 0
 
 game_window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 game_window.fill(WHITE)
@@ -72,14 +77,17 @@ class Bullet (pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load("bullet.png")
         self.surf = pygame.Surface((50, 50))
-        self.rect = self.surf.get_rect(center=(SCREEN_WIDTH - 50, 25))
+        self.rect = self.surf.get_rect(center=(SCREEN_WIDTH - 50, -100))
 
     def move(self, barrel):
+        global SCORE
         keypress = pygame.key.get_pressed()
         if keypress[K_SPACE] and self.rect.x < 0:
             self.rect.y = barrel.rect.y + 15
-            self.rect.x = SCREEN_WIDTH - 50
-        self.rect.move_ip(-10, 0)
+            self.rect.x = SCREEN_WIDTH - 75
+            SCORE += 1
+        elif self.rect.x > -50:
+            self.rect.move_ip(-10, 0)
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
@@ -88,19 +96,31 @@ class Bullet (pygame.sprite.Sprite):
 CANNON = Cannon()
 BALLOON = Balloon()
 BULLET = Bullet()
+projectiles = [BULLET]
+font = pygame.font.SysFont("Verdana", 20)
+
 
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
-
     game_window.fill(WHITE)
+    scores = font_small.render(str(SCORE), True, BLACK)
+    game_window.blit(scores, (10, 10))
     CANNON.draw(game_window)
     BALLOON.draw(game_window)
     BULLET.draw(game_window)
     BULLET.move(CANNON)
     BALLOON.update()
     CANNON.update()
+    game_over = font.render("Congratulations! it took you %s shots to hit the balloon" % SCORE, True, BLACK)
+    if pygame.sprite.spritecollide(BALLOON, projectiles, False):
+        game_window.fill(GREEN)
+        game_window.blit(game_over, (30, 250))
+        pygame.display.update()
+        time.sleep(5)
+        pygame.quit()
+        sys.exit()
     pygame.display.update()
     FramePerSec.tick(FPS)
